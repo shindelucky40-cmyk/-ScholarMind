@@ -1,0 +1,30 @@
+# Secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Runtime data (uploaded papers & indices)
+data/papers/*
+data/indices/*
+!data/papers/.gitkeep
+!data/indices/.gitkeep
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Test files
+test_*.py
+test_*.txt

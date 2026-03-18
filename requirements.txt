@@ -1,0 +1,16 @@
+# ── Core ──
+streamlit
+python-dotenv
+
+# ── PDF Processing ──
+PyMuPDF
+langchain
+langchain-text-splitters
+
+# ── Embeddings & Vector Store ──
+sentence-transformers
+faiss-cpu
+
+# ── LLM Providers ──
+openai
+google-generativeai
