@@ -246,7 +246,6 @@ def inject_custom_css():
     """, unsafe_allow_html=True)
 
 
-# ── Session State Initialization ───────────────────────────────────────
 def init_session_state():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
@@ -254,6 +253,8 @@ def init_session_state():
         st.session_state.selected_paper = None
     if "processing" not in st.session_state:
         st.session_state.processing = False
+    if "user_api_key" not in st.session_state:
+        st.session_state.user_api_key = ""
 
 
 # ── Sidebar ────────────────────────────────────────────────────────────
@@ -275,6 +276,21 @@ def render_sidebar():
         </div>
         """, unsafe_allow_html=True)
         
+        st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
+        
+        # ── API Key ──
+        st.markdown("### 🔑 API Key (Optional)")
+        user_key = st.text_input(
+            "Groq API Key",
+            type="password",
+            value=st.session_state.user_api_key,
+            help="Get a free key at console.groq.com. If blank, the system default is used.",
+            label_visibility="collapsed",
+            placeholder="Enter your Groq API Key..."
+        )
+        if user_key != st.session_state.user_api_key:
+            st.session_state.user_api_key = user_key
+            
         st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
         
         # ── Upload Section ──
@@ -482,6 +498,7 @@ def render_chat():
                     question=question,
                     paper_id=st.session_state.selected_paper,
                     chat_history=api_history if api_history else None,
+                    user_api_key=st.session_state.user_api_key
                 )
                 
                 st.session_state.chat_history.append({

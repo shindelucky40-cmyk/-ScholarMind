@@ -57,10 +57,14 @@ Question: {question}
 Please provide a clear, well-structured answer based on the context above."""
 
 
-def _call_groq(messages: list) -> str:
+def _call_groq(messages: list, user_api_key: str = None) -> str:
     """Call Groq API (OpenAI-compatible)."""
+    active_key = user_api_key if user_api_key else GROQ_API_KEY
+    if not active_key:
+        raise ValueError("No Groq API key found. Please provide one in the sidebar.")
+        
     client = OpenAI(
-        api_key=GROQ_API_KEY,
+        api_key=active_key,
         base_url=GROQ_BASE_URL,
     )
     response = client.chat.completions.create(
@@ -92,18 +96,20 @@ def _call_gemini(messages: list) -> str:
     return response.text
 
 
-def _call_llm(messages: list) -> tuple[str, str]:
+def _call_llm(messages: list, user_api_key: str = None) -> tuple[str, str]:
     """Try Groq first, fall back to Gemini. Returns (answer, provider_name)."""
     # Try Groq first (faster, higher limits)
-    if GROQ_API_KEY:
+    active_groq_key = user_api_key if user_api_key else GROQ_API_KEY
+    
+    if active_groq_key:
         try:
-            answer = _call_groq(messages)
+            answer = _call_groq(messages, user_api_key=active_groq_key)
             return answer, f"Groq ({GROQ_MODEL})"
         except Exception as e:
             err = str(e)
-            # If rate limited, fall through to Gemini
-            if "rate_limit" not in err.lower() and "429" not in err:
-                raise  # Re-raise non-rate-limit errors
+            # If rate limited, fall through to Gemini (only if NOT using a custom API key, custom keys shouldn't arbitrarily fallback without user awareness)
+            if ("rate_limit" not in err.lower() and "429" not in err) or user_api_key:
+                raise  # Re-raise non-rate-limit errors OR if using custom key
 
     # Fallback to Gemini
     if GEMINI_API_KEY:
@@ -149,7 +155,7 @@ def ask_question(question: str, paper_id: str, top_k: int = TOP_K) -> dict:
     return {"answer": answer, "sources": sources, "model": model_used}
 
 
-def get_chat_response(question: str, paper_id: str, chat_history: list = None, top_k: int = TOP_K) -> dict:
+def get_chat_response(question: str, paper_id: str, chat_history: list = None, top_k: int = TOP_K, user_api_key: str = None) -> dict:
     """Conversational RAG with chat history context."""
 
     chunks = similarity_search(question, paper_id, top_k)
@@ -170,7 +176,7 @@ def get_chat_response(question: str, paper_id: str, chat_history: list = None, t
             messages.append(msg)
     messages.append({"role": "user", "content": user_message})
 
-    answer, model_used = _call_llm(messages)
+    answer, model_used = _call_llm(messages, user_api_key=user_api_key)
 
     sources = []
     for chunk in chunks:
