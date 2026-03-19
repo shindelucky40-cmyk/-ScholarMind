@@ -1,0 +1,10 @@
+# Docker-specific requirements (torch already installed separately in Dockerfile)
+streamlit
+python-dotenv
+PyMuPDF
+langchain
+langchain-text-splitters
+sentence-transformers
+faiss-cpu
+openai
+google-generativeai

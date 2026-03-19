@@ -13,6 +13,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
+        build-essential \
         libmupdf-dev \
         libglib2.0-0 \
         libsm6 \
@@ -26,9 +27,12 @@ RUN useradd -m -u 1000 appuser
 # Working directory
 WORKDIR /app
 
-# Install Python deps (cached layer)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install CPU-only PyTorch first (much smaller than full torch)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+# Install remaining Python deps (cached layer)
+COPY requirements-docker.txt .
+RUN pip install --no-cache-dir -r requirements-docker.txt
 
 # Copy application code
 COPY . .

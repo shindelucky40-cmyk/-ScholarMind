@@ -8,6 +8,8 @@ langchain
 langchain-text-splitters
 
 # ── Embeddings & Vector Store ──
+# Install CPU-only torch first (saves ~1.5 GB vs full torch)
+torch --index-url https://download.pytorch.org/whl/cpu
 sentence-transformers
 faiss-cpu
 
